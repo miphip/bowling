@@ -1,4 +1,5 @@
 from rx import Observable, Observer
+from rx.subjects import Subject
 
 in_ = '23432/XX428/X218-'
 
@@ -31,7 +32,7 @@ def calc(ch, prev, cur, next, nextnext):
 #dump(s1.zip(s4, lambda a, b: (a,b)))
 
 f_in = s1
-frame_result = f_in.sca
+#frame_result = f_in.sca
 
 frame_results = Observable.from_([5,7,20,24,16,6,20,13,3,8])
 
@@ -40,3 +41,27 @@ frame_sums = frame_results.scan(lambda acc, x: acc + x)
 
 end_result = frame_sums.last()
 dump(end_result)
+
+source = Observable.interval(1000)
+opener = Subject()
+closer = Subject()
+index = 0
+def on_window(w):
+    global index
+    i = index
+    index += 1
+    print('Opening new window', i)
+    name = 'w%d' % i
+    w.subscribe(
+        lambda v: print(name, v),
+        lambda ex: print(name, 'ex'),
+        lambda: print(name, 'completed'))
+source.window(opener, lambda x: closer).subscribe(on_window, lambda ex: None, lambda: print(
+        'source '
+                                                                                 'completed'))
+while True:
+    t = input('enter')
+    if t.startswith('o'):
+        opener.on_next(1)
+    if t.startswith('c'):
+        closer.on_next(2)
